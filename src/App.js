@@ -121,7 +121,7 @@ function App() {
               renderInput={(params) =>
                 <TextField
                   error={errors.indexOf('rangeError') >= 0}
-                  helperText={errors.indexOf('rangeError') >= 0 && 'Maximum range 90 days'}
+                  helperText={errors.indexOf('rangeError') >= 0 && 'Start date must be before the last date'}
                   {...params}
                 />
               }
@@ -135,7 +135,7 @@ function App() {
               renderInput={(params) =>
                 <TextField
                   error={errors.indexOf('rangeError') >= 0}
-                  helperText={errors.indexOf('rangeError') >= 0 && 'Maximum range 90 days'}
+                  helperText={errors.indexOf('rangeError') >= 0 && 'Start date must be before the last date'}
                   {...params}
                 />
               }

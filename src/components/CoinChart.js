@@ -7,8 +7,6 @@ import Highcharts from "highcharts";
 const CoinChart = ({data, selected}) => {
 
   const [ bearish, setBearish] = useState({
-    /* startBear: new Date().getTime(), 
-    endBear: new Date().getTime(), */ 
     startBear: 0, 
     endBear: 0,
     trendBear: 0
@@ -21,12 +19,24 @@ const CoinChart = ({data, selected}) => {
     return diffDays
   }
 
+
+  let topPrice =data.prices[0][1]
+  let bottomPrice =data.prices[0][1]
+  data.prices.map(p => {
+    if(p[1]>topPrice) topPrice=p[1]
+    if(p[1]<bottomPrice) bottomPrice=p[1]
+  })
+
+  console.log(topPrice, bottomPrice)
+
   const createDataSet = () => {
     // extracting the last data point for each day
     let counter = 0
     let startBear
     let endBear
     let trendBear
+    let topPrice = 0
+    let bottomPrice = 0
     let extractedData = data.prices.filter(price => {
       if(data.prices.indexOf(price)<data.prices.length-1 && new Date(data.prices[data.prices.indexOf(price)+1][0]).getDate()>new Date(price[0]).getDate()){
         //console.log(new Date(price[0]).getDate())
@@ -94,17 +104,18 @@ const CoinChart = ({data, selected}) => {
     series: [
       {
         data: chartData,
+        name:'Crypto currency graph',
         turboThreshold: 5000
       },
-      /* {
-        type:'area',
-        name:'band',
+      {
+        type:'line',
+        name:'longest bearish trend',
          marker:{enabled:false},
-         lineWidth:0,
-         color:'rgba(156,156,156,.5)',
-        data:[[new Date(bearish.startBear[0]), Highcharts.chart().yAxis[max]],[new Date(bearish.startBear[0]),80],[new Date(bearish.endBear[0]),80],[new Date(bearish.endBear[0]),0]]
+         lineWidth:3,
+         color:'orange',
+        data:[[bearish.startBear[0], bottomPrice],[bearish.endBear[0],bottomPrice]]
          
-     } */
+     }
     ]
   }
 
