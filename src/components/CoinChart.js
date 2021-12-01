@@ -35,8 +35,6 @@ const CoinChart = ({data, selected}) => {
     let startBear
     let endBear
     let trendBear
-    let topPrice = 0
-    let bottomPrice = 0
     let extractedData = data.prices.filter(price => {
       if(data.prices.indexOf(price)<data.prices.length-1 && new Date(data.prices[data.prices.indexOf(price)+1][0]).getDate()>new Date(price[0]).getDate()){
         //console.log(new Date(price[0]).getDate())
