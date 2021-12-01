@@ -111,7 +111,7 @@ const CoinChart = ({data, selected}) => {
          marker:{enabled:false},
          lineWidth:3,
          color:'orange',
-        data:[[bearish.startBear[0], bottomPrice],[bearish.endBear[0],bottomPrice]]
+        data:[[bearish.startBear[0], bottomPrice*0.9],[bearish.endBear[0],bottomPrice*0.9]]
          
      }
     ]
