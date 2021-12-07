@@ -5,44 +5,72 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button'
 import Stack from '@mui/material/Stack';
 import Autocomplete from '@mui/material/Autocomplete';
+import CircularProgress from '@mui/material/CircularProgress';
 import TextField from '@mui/material/TextField';
 import DesktopDatePicker from '@mui/lab/DesktopDatePicker';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
+//import {writeJsonFile} from 'write-json-file';
+
 
 import CoinChart from './components/CoinChart'
 
 function App() {
 
-  const [coinList, setCoinList] = useState([])
-  const [selected, setCurrency] = useState({})
-  const [data, setData] = useState({})
+  const [ coinList, setCoinList ] = useState([])
 
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
+  const [ selected, setCurrency ] = useState({})
+  const [ startDate, setStartDate ] = useState(new Date());
+  const [ endDate, setEndDate ] = useState(new Date());
 
-  const [errors, setErrors] = useState([])
+  const [ listLoaded, setListLoaded ] = useState(false)
+
+  const [ showChart, setShowChart ] = useState(false)
+
+  const [ errors, setErrors ] = useState([])
 
   const today = new Date()
-  /* const checkDateRange = () => {
-    const diffTime = Math.abs(endDate - startDate);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays
-  } */
 
-  const getCurrencyInfo = async (type) => {
+  const initBear = {
+    start: 0, 
+    end: 0,
+    trend: 0
+  }
+
+  useEffect(() => {
+    try {
+      fetch('/.netlify/functions/node-fetch', { headers: { accept: "Accept: application/json" } })
+        .then(res => res.json())
+        .then(json => {
+          setCoinList(json.data)
+          setListLoaded(true)
+        })
+    } catch (error) {
+      console.error(error)
+    }
+  }, [setCoinList])
+
+  /* const getCurrencyData = async (type) => {
+    setDataLoading(true)
     if (startDate && endDate && selected) {
-      try {
-        fetch(`/.netlify/functions/node-fetch?id=${type.id}&start=${startDate.getTime()/1000}&end=${endDate.getTime()/1000}`, { headers: { accept: "Accept: application/json" } })
-          .then(res => res.json())
-          .then(data => setData(data.data))
-      } catch (error) {
-        console.error(error)
-      }
+        try {
+          //console.log(startDate, endDate, selected)
+          fetch(`/.netlify/functions/node-fetch?id=${type.id}&start=${startDate}&end=${endDate}`, { headers: { accept: "Accept: application/json" } })
+            .then(res => res.json())
+            .then(json => {
+              //console.log(json.data)
+              //const writeRes = writeJsonFile('../data/crypto.json', {foo: true});
+              //console.log(writeRes)
+              setDataLoading(false)
+              setData(json.data)
+            })
+        } catch (error) {
+          console.error(error)
+        }
     } else {
       //show error
     }
-  }
+  } */
 
   const handleStart = (newValue) => {
     setStartDate(newValue);
@@ -59,33 +87,36 @@ function App() {
     setErrors(newErrors)
   }
 
-  const updateInfo = () => {
-    
-    //getCurrencyInfo(selected)
+  const getNewData = () => {
+    setShowChart(true)
+    const newErrors = []
     if (Object.keys(selected).length && startDate<endDate ){
-      getCurrencyInfo(selected)
-      setErrors([])
+      //getCurrencyData(selected)
+      
     } else {
-      if (startDate>endDate) setErrors([...errors, 'rangeError'])
-      if (!Object.keys(selected).length && errors.indexOf('noCoin') < 0) setErrors([...errors, 'noCoin'])
+      if (startDate>endDate) newErrors = [...newErrors, 'rangeError']
+      if (!Object.keys(selected).length && errors.indexOf('noCoin') < 0) newErrors = [...newErrors, 'noCoin']
     }
+    setErrors(newErrors)
   }
 
-  useEffect(() => {
-    try {
-      fetch('/.netlify/functions/node-fetch', { headers: { accept: "Accept: application/json" } })
-        .then(res => res.json())
-        .then(data => {
-          data.data.map(d => {
-            d.label = d.name
-            return d
-          })
-          setCoinList(data.data)
-        })
-    } catch (error) {
-      console.error(error)
+ 
+
+ /*  const renderChart = () => {
+
+    if(data.prices.length) {
+      return (
+        <CoinChart 
+          selected={selected} 
+          startDate={startDate} 
+          endDate={endDate} 
+          initBear={initBear} 
+          /> 
+      )
+    } else {
+      return <>No data </>
     }
-  }, [setCoinList])
+  } */
 
   return (
     <Container maxWidth="sm">
@@ -101,7 +132,7 @@ function App() {
               freeSolo
               id="combo-box-demo"
               options={coinList}
-              /* options={coinList.map(option => option.name)} */
+              getOptionLabel={(option) => option.name}
               onChange={handleList}
               renderInput={(params) =>
                 <TextField
@@ -109,7 +140,7 @@ function App() {
                   helperText={errors.indexOf('noCoin') >= 0 && 'This field cannot be empty'}
                   {...params}
                   label="Select currency"
-                />
+                >{ listLoaded && <CircularProgress />} </TextField>
               }
             />
             <DesktopDatePicker
@@ -141,17 +172,23 @@ function App() {
               }
             />
             <Button
-              onClick={updateInfo}
+              onClick={getNewData}
               variant="contained">
               Get Info
             </Button>
           </Stack>
         </LocalizationProvider>
         {/* Render returned currency values in a chart */}
-        {Object.keys(data).length !== 0 && <CoinChart data={data} selected={selected} />}
-
+        { showChart && 
+          <CoinChart 
+            selected={selected} 
+            startDate={startDate} 
+            endDate={endDate} 
+            initBear={initBear}
+            showChart={setShowChart}
+            /> 
+          }
       </Box>
-
     </Container>
   );
 }

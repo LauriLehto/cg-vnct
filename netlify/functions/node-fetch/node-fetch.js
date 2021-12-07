@@ -17,9 +17,12 @@ const handler = async function (query) {
   try {
     if(params.id){
 
+      const startTime = parseInt(new Date(params.start).getTime())/1000
+      const endTime = parseInt(new Date(params.end).getTime())/1000
+      //console.log(startTime,endTime)
       const client = CoinGeckoClient.coins.fetchMarketChartRange(params.id, {
-        from: parseInt(params.start),
-        to: parseInt(params.end),
+        from: startTime,
+        to: endTime,
         vs_currency: 'eur'
       }) 
       
@@ -28,6 +31,8 @@ const handler = async function (query) {
         // NOT res.status >= 200 && res.status < 300
         return { statusCode: 200, body: result.message }
       }
+
+      //console.log(result)
 
       return {
         statusCode: 200,
@@ -50,7 +55,7 @@ const handler = async function (query) {
     }
   } catch (error) {
     // output to netlify function log
-    console.log(error)
+    console.error(error)
     return {
       statusCode: 500,
       // Could be a custom message or object i.e. JSON.stringify(err)
