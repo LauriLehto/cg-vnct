@@ -19,23 +19,16 @@ function App() {
 
   const [ coinList, setCoinList ] = useState([])
 
-  const [ selected, setCurrency ] = useState({})
+  const [ selected, setSelected ] = useState({})
   const [ startDate, setStartDate ] = useState(new Date());
   const [ endDate, setEndDate ] = useState(new Date());
+  const [ currency, setCurrency ] = useState({})
 
+  const [ dataLoading, setDataLoading ] = useState(false)
   const [ listLoaded, setListLoaded ] = useState(false)
-
-  const [ showChart, setShowChart ] = useState(false)
-
   const [ errors, setErrors ] = useState([])
 
   const today = new Date()
-
-  const initBear = {
-    start: 0, 
-    end: 0,
-    trend: 0
-  }
 
   useEffect(() => {
     try {
@@ -50,28 +43,6 @@ function App() {
     }
   }, [setCoinList])
 
-  /* const getCurrencyData = async (type) => {
-    setDataLoading(true)
-    if (startDate && endDate && selected) {
-        try {
-          //console.log(startDate, endDate, selected)
-          fetch(`/.netlify/functions/node-fetch?id=${type.id}&start=${startDate}&end=${endDate}`, { headers: { accept: "Accept: application/json" } })
-            .then(res => res.json())
-            .then(json => {
-              //console.log(json.data)
-              //const writeRes = writeJsonFile('../data/crypto.json', {foo: true});
-              //console.log(writeRes)
-              setDataLoading(false)
-              setData(json.data)
-            })
-        } catch (error) {
-          console.error(error)
-        }
-    } else {
-      //show error
-    }
-  } */
-
   const handleStart = (newValue) => {
     setStartDate(newValue);
   };
@@ -81,42 +52,26 @@ function App() {
   };
 
   const handleList = (event, newValue) => {
-    setCurrency(newValue)
+    setSelected(newValue)
     const newErrors = [...errors]
     newErrors.splice(newErrors.indexOf('noCoin'),1)
     setErrors(newErrors)
   }
 
   const getNewData = () => {
-    setShowChart(true)
-    const newErrors = []
+    let newErrors = []
     if (Object.keys(selected).length && startDate<endDate ){
-      //getCurrencyData(selected)
+      console.log('set currency')
+      setCurrency({selected, startDate, endDate})
+      setDataLoading(true)     
       
     } else {
+      // set error message
       if (startDate>endDate) newErrors = [...newErrors, 'rangeError']
       if (!Object.keys(selected).length && errors.indexOf('noCoin') < 0) newErrors = [...newErrors, 'noCoin']
     }
     setErrors(newErrors)
   }
-
- 
-
- /*  const renderChart = () => {
-
-    if(data.prices.length) {
-      return (
-        <CoinChart 
-          selected={selected} 
-          startDate={startDate} 
-          endDate={endDate} 
-          initBear={initBear} 
-          /> 
-      )
-    } else {
-      return <>No data </>
-    }
-  } */
 
   return (
     <Container maxWidth="sm">
@@ -175,19 +130,14 @@ function App() {
               onClick={getNewData}
               variant="contained">
               Get Info
+              {dataLoading ? <CircularProgress size={20} color='inherit' /> : <></>}
             </Button>
           </Stack>
         </LocalizationProvider>
-        {/* Render returned currency values in a chart */}
-        { showChart && 
-          <CoinChart 
-            selected={selected} 
-            startDate={startDate} 
-            endDate={endDate} 
-            initBear={initBear}
-            showChart={setShowChart}
-            /> 
-          }
+        <CoinChart 
+          currency={currency}
+          setDataLoading={setDataLoading}
+          /> 
       </Box>
     </Container>
   );
