@@ -3,6 +3,8 @@ import React, {useState, useEffect } from 'react'
 import HighchartsReact from "highcharts-react-official";
 import Highcharts from "highcharts";
 
+import  { getUTCTimeString, filterDataByDate, getTopBottom, checkDateRange, numberWithSpaces } from '../functions/helpers'
+
 function CoinChart(props){
 
   const initBear = {
@@ -12,29 +14,16 @@ function CoinChart(props){
   }
 
   const { currency } = props
+  const [ data, setData ] = useState([])
   const [ showChart, setShowChart ] = useState(false)
   const [ bearishSet, setBearish] = useState(initBear)
   const [ chartData, setChartData ] = useState({})
-
+  const [ prices, setTopBottom ] = useState({})
   
-  const checkDateRange = (endDate, startDate) => {
-    const diffTime = Math.abs(endDate - startDate);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays
-  }
-
   
   const getBearishChart = (bearish, first) => {
 
-    let topPrice = chartData[0].y
-    let bottomPrice = chartData[0].y
-    if(chartData.length){
-      chartData.map(p => {
-        if(p.y>topPrice) topPrice=p.y
-        if(p.y<bottomPrice) bottomPrice=p.y
-        return null
-      })
-    }
+    const { bottomPrice } = prices
 
     const firstTitleObject = {
       showInLegend: true,
@@ -46,11 +35,11 @@ function CoinChart(props){
       type:'line',
       marker:{enabled:false},
       lineWidth:3,
-      color:'pink',
+      color:'grey',
       data:[]
     }
 
-    bearishData.data =[[bearish.start[0], bottomPrice*0.9],[bearish.end[0],bottomPrice*0.9]]
+    bearishData.data =[[bearish.start[0], bottomPrice[1]*0.9],[bearish.end[0],bottomPrice[1]*0.9]]
 
     if(first) {
       bearishData = {...bearishData, ...firstTitleObject}
@@ -58,26 +47,101 @@ function CoinChart(props){
     return bearishData
   }
 
+  const getHighestVolumeChart = () => {
+
+    if(Object.keys(data).length){
+      const { topPrice, bottomPrice } = prices
+
+      let volumeData = {
+        showInLegend: true,
+        name:'',
+        type:'line',
+        marker:{enabled:false},
+        lineWidth:2,
+        color:'orange',
+        data:[]
+      }
+
+      const total_volumes = filterDataByDate(data.total_volumes)
+      let highestV = 0
+      total_volumes.map(v => {
+        if(v[1]>highestV) highestV=v[1]
+        return v
+      })
+
+      highestV = total_volumes.filter(v => v[1]===highestV)
+      highestV = highestV[0]
+      const hvTime = new Date(highestV[0])
+      let hvAmount = parseInt(highestV[1])
+      const getTextHighestVolumeAmount = (hva) => {
+        return `${numberWithSpaces(hva)} euros`
+      }
+      let hvaText = `Highest trading volume was ${getTextHighestVolumeAmount(hvAmount)} on ${getUTCTimeString(hvTime)}`
+
+      volumeData.data = [[highestV[0], bottomPrice[1]*0.8],[highestV[0],topPrice[1]*1.1]]
+      volumeData.name = hvaText
+
+      return volumeData
+    }
+    return null
+
+  }
+
+  const getBuyingChart = () => {
+
+    if(Object.keys(data).length){
+      const { topPrice, bottomPrice } = prices
+      const priceDiff = topPrice[1]-bottomPrice[1]
+      console.log(priceDiff/10)
+      const tenth = priceDiff/10
+
+
+      const priceData = {
+        showInLegend: true,
+        name:'',
+        type:'line',
+        marker:{enabled:true},
+        lineWidth:2,
+        data:[]
+      }
+      const highestPrice = {
+        color:'green',
+
+      }
+      highestPrice.name = `Highest price was ${numberWithSpaces(topPrice[1])} euros on ${getUTCTimeString(topPrice[0])}`
+      highestPrice.data = [[topPrice[0], topPrice[1]+tenth],[topPrice[0],topPrice[1]+tenth]]
+      const lowestPrice = {
+        color:'red',
+
+      }
+      lowestPrice.name = `Lowest price was ${numberWithSpaces(bottomPrice[1])} euros on ${getUTCTimeString(bottomPrice[0])}`
+      lowestPrice.data = [[bottomPrice[0], bottomPrice[1]-tenth],[bottomPrice[0],bottomPrice[1]-tenth]]
+
+      return [{...priceData, ...lowestPrice}, {...priceData, ...highestPrice}]
+        //volumeData.data = [[highestV[0], bottomPrice],[highestV[0],topPrice]]
+        //volumeData.name = hvaText
+
+    }
+  }
+
   const getChartTitle = () => {
     const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
 
     if(chartData.length && bearishSet.length){
-      const startTime = (b) => new Date(b.start[0]).toLocaleDateString('en-EN', options)
-      const endTime = (b) => new Date(b.end[0]).toLocaleDateString('en-EN', options)
 
-      const getBearishText = () => {
+      const getTitle = () => {
         let textStart = `Longest bearish trend is ${bearishSet[0].trend} days <br /> between `
         bearishSet.map(b => {
           if(bearishSet.indexOf(b)<bearishSet.length-1){
-            textStart = textStart + `${startTime(b)} and ${endTime(b)} and <br />`
+            textStart = textStart + `${getUTCTimeString(b.start[0])} and ${getUTCTimeString(b.end[0])} and <br />`
           }else {
-            textStart = textStart + `${startTime(b)} and ${endTime(b)}`
+            textStart = textStart + `${getUTCTimeString(b.start[0])} and ${getUTCTimeString(b.end[0])}`
           }
           return null
         })
-
         return textStart
       }
+
       return {
         type:'datetime',
         lineColor:'#999',
@@ -85,7 +149,7 @@ function CoinChart(props){
         tickColor:'#666',
         tickLength:3,
         title:{
-            text: getBearishText()
+            text: getTitle()
         }
       }
     } else {
@@ -100,7 +164,7 @@ function CoinChart(props){
   }
 
   const getChartSeries = () => {
-    const chartSeries = [
+    let chartSeries = [
       {
         data: chartData,
         name:'Crypto currency graph',
@@ -114,6 +178,17 @@ function CoinChart(props){
         return null
       })
     }
+
+    chartSeries.push(getHighestVolumeChart())
+    console.log(getBuyingChart())
+    const buyingChart = getBuyingChart()
+    chartSeries = chartSeries.concat(getBuyingChart())
+    //chartSeries = [...chartSeries, ...buyingChart]
+    /* Object.keys(getBuyingChart()).map(c => {
+      chartSeries.push(getBuyingChart()[c])
+      return null
+    }) */
+    console.log(chartSeries)
     return chartSeries
   }
 
@@ -130,20 +205,10 @@ function CoinChart(props){
 
   useEffect(()=>{
     const createChartData = (data) => {
-      //console.log('raw data', data.prices)
-      //add dates to data for easy comparison
-      let newData = data.prices.map(d => {
-        d.date=new Date(d[0]).getDate()
-        return d
-      })
-  
-      //filter last value point for each date
-      newData = newData.filter(d => {
-        if(newData.indexOf(d)<newData.length-1 && d.date !== newData[newData.indexOf(d)+1].date){
-          return d
-        }
-        return null
-      }).filter(d => d)
+
+      let newData = filterDataByDate(data.prices)
+      console.log('top and bottom',getTopBottom(newData))
+      setTopBottom(getTopBottom(newData))
       //format data for charts
       const newChartData = newData.map(d => {
         const data = {x: d[0], y:d[1] }
@@ -152,7 +217,6 @@ function CoinChart(props){
   
       //console.log('daily data',newChartData)
       setChartData(newChartData)
-  
   
       //produce bearish data
       let counter = 0
@@ -165,7 +229,7 @@ function CoinChart(props){
           } else {
             let start = newData[newData.indexOf(d)-counter]
             let end = d
-            let trend =  checkDateRange(new Date(end[0]), new Date(start[0]))
+            let trend = checkDateRange(end[0], start[0])
             const newBearish = {
               start, end, trend
             }
@@ -176,7 +240,7 @@ function CoinChart(props){
           if(d[1]<newData[newData.indexOf(d)-1][1]){
             let start = newData[newData.indexOf(d)-counter]
             let end = d
-            let trend =  checkDateRange(new Date(end[0]), new Date(start[0]))
+            let trend =  checkDateRange(end[0], start[0])
             const newBearish = {
               start, end, trend
             }
@@ -186,7 +250,7 @@ function CoinChart(props){
         return null
       })
   
-      //find longest trend
+      //determine longest bearish trend
       let longestTrend = 0
       newBearishSet.map(b => {
         if(b && b.trend > longestTrend){
@@ -203,12 +267,11 @@ function CoinChart(props){
 
     if(Object.keys(currency).length){
       try {
-        //console.log(startDate, endDate, selected)
         fetch(`/.netlify/functions/node-fetch?id=${currency.selected.id}&start=${currency.startDate}&end=${currency.endDate}`, { headers: { accept: "Accept: application/json" } })
           .then(res => res.json())
           .then(json => {
-            //console.log(json.data)
             createChartData(json.data)
+            setData(json.data)
             setShowChart(true)
             props.setDataLoading(false)
           })
@@ -217,18 +280,24 @@ function CoinChart(props){
       }
     }
     
-  },[setChartData, setShowChart, props , currency])
+  },[setChartData, setShowChart, setData, props , currency])
 
 
   return (
     <>
-      { showChart && chartData.length !== 0 &&
-        <HighchartsReact
-          highcharts={Highcharts}
-          options={chartOptions}
-        />}
-      { showChart && chartData.length === 0 && 
-        <p>Choose different date range or currency, no data received!</p>}
+      { 
+        /* Show data in a chart */
+        showChart && chartData.length !== 0 &&
+          <HighchartsReact
+            highcharts={Highcharts}
+            options={chartOptions}
+            />
+      }
+      { 
+        /* Show message if no data has been received */
+        showChart && chartData.length === 0 && 
+          <p>Choose different date range or currency, no data received!</p>
+      }
     </>
   )
 }

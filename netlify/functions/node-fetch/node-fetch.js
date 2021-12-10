@@ -17,8 +17,8 @@ const handler = async function (query) {
   try {
     if(params.id){
 
-      const startTime = parseInt(new Date(params.start).getTime())/1000
-      const endTime = parseInt(new Date(params.end).getTime())/1000
+      const startTime = parseInt(new Date(params.start).getTime()-24*60*60*1000)/1000
+      const endTime = parseInt(new Date(params.end).getTime()+60*60*1000)/1000
       //console.log(startTime,endTime)
       const client = CoinGeckoClient.coins.fetchMarketChartRange(params.id, {
         from: startTime,

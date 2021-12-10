@@ -61,7 +61,6 @@ function App() {
   const getNewData = () => {
     let newErrors = []
     if (Object.keys(selected).length && startDate<endDate ){
-      console.log('set currency')
       setCurrency({selected, startDate, endDate})
       setDataLoading(true)     
       
