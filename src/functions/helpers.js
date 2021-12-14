@@ -1,8 +1,7 @@
 
   const getUTCTimeString = (t) => {
     const time = new Date(t)
-    const minutes = time.getUTCMinutes()
-    const timeString = `${time.getUTCDate()}-${time.getUTCMonth()+1}-${time.getUTCFullYear()}, ${time.getUTCHours()}:${minutes.toString().length===1 ? `0${minutes}` : minutes}`
+    const timeString = `${time.getUTCFullYear()}-${time.getUTCMonth()+1}-${time.getUTCDate()}`
     return timeString
   }
 
@@ -50,7 +49,7 @@
     if(parts[0].length>3){
       parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, " ");
     }
-    return parts.join(".");
+    return parts.join(" .");
   }
 
   export { getUTCTimeString, filterDataByDate, getTopBottom, checkDateRange, numberWithSpaces}

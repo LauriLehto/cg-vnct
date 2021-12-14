@@ -14,12 +14,14 @@ const handler = async function (query) {
   const CoinGeckoClient = new CoinGecko();
   /* console.log(query.queryStringParameters.id) */
   const params = query.queryStringParameters
+  const newStart = new Date(params.start).setUTCHours(0,0,0,0)
+  const newEnd = new Date(params.end).setUTCHours(0,0,0,0)
   try {
     if(params.id){
 
-      const startTime = parseInt(new Date(params.start).getTime()-24*60*60*1000)/1000
-      const endTime = parseInt(new Date(params.end).getTime()+60*60*1000)/1000
-      //console.log(startTime,endTime)
+      const startTime = newStart/1000
+      const endTime = (newEnd+48*60*60*1000)/1000
+      console.log(startTime,endTime)
       const client = CoinGeckoClient.coins.fetchMarketChartRange(params.id, {
         from: startTime,
         to: endTime,
