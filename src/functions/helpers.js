@@ -21,7 +21,7 @@
     return newData
   }
 
-  const getTopBottom = (prices) => {
+  const getHighLow = (prices) => {
     let topPrice = prices[0]
     let bottomPrice = prices[0]
     if(prices.length){
@@ -52,4 +52,4 @@
     return parts.join(" .");
   }
 
-  export { getUTCTimeString, filterDataByDate, getTopBottom, checkDateRange, numberWithSpaces}
+  export { getUTCTimeString, filterDataByDate, getHighLow, checkDateRange, numberWithSpaces}

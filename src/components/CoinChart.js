@@ -3,7 +3,7 @@ import React, {useState, useEffect } from 'react'
 import HighchartsReact from "highcharts-react-official";
 import Highcharts from "highcharts";
 
-import  { getUTCTimeString, filterDataByDate, getTopBottom, checkDateRange, numberWithSpaces } from '../functions/helpers'
+import  { getUTCTimeString, filterDataByDate, getHighLow, checkDateRange, numberWithSpaces } from '../functions/helpers'
 
 function CoinChart(props){
 
@@ -18,7 +18,7 @@ function CoinChart(props){
   const [ showChart, setShowChart ] = useState(false)
   const [ bearishData, setBearish] = useState(initBear)
   const [ chartData, setChartData ] = useState({})
-  const [ prices, setTopBottom ] = useState({})
+  const [ prices, setHighLow ] = useState({})
   
   
   const getBearishChart = (bearish, first) => {
@@ -142,7 +142,7 @@ function CoinChart(props){
 
       let titleText = ''
       if(chartStart === bearStart && chartEnd === bearEnd){
-        titleText = "You should duck and scrooge, date range is complete bearish! Do not buy or sell!"
+        titleText = "You should DUCK and SCROOGE, date range is complete bearish! Do not buy or sell!"
       }
 
       return {
@@ -197,7 +197,7 @@ function CoinChart(props){
     const createChartData = (data) => {
 
       let newData = filterDataByDate(data.prices)
-      setTopBottom(getTopBottom(newData))
+      setHighLow(getHighLow(newData))
       //format data for charts
       const newChartData = newData.map(d => {
         const data = {x: d[0], y:d[1] }

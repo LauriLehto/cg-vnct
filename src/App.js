@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button'
 import Stack from '@mui/material/Stack';
-import Autocomplete from '@mui/material/Autocomplete';
+import Autocomplete, {createFilterOptions} from '@mui/material/Autocomplete';
 import CircularProgress from '@mui/material/CircularProgress';
 import TextField from '@mui/material/TextField';
 import DesktopDatePicker from '@mui/lab/DesktopDatePicker';
@@ -52,6 +52,7 @@ function App() {
   };
 
   const handleList = (event, newValue) => {
+    console.log(newValue)
     setSelected(newValue)
     const newErrors = [...errors]
     newErrors.splice(newErrors.indexOf('noCoin'),1)
@@ -72,6 +73,21 @@ function App() {
     setErrors(newErrors)
   }
 
+  const filterOptions = createFilterOptions({
+    matchFrom: 'any',
+    limit: 500,
+  });
+
+  const handleOptionLabel = (option) => {
+
+    if(option.name){
+      return option.name
+
+    }
+
+    return 'null'
+  }
+
   return (
     <Container maxWidth="sm">
       <Box sx={{ my: 4 }}>
@@ -83,10 +99,11 @@ function App() {
             <Autocomplete
               disableClearable
               disablePortal
+              filterOptions={filterOptions}
               freeSolo
               id="combo-box-demo"
               options={coinList}
-              getOptionLabel={(option) => option.name}
+              getOptionLabel={handleOptionLabel}
               onChange={handleList}
               renderInput={(params) =>
                 <TextField
