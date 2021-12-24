@@ -8,11 +8,7 @@ const CoinGeckoClient = new CoinGecko();
 
 //3. Make calls
 
-const cg_rul = 'https://www.coingecko.com/en/api/documentation'
-
 const handler = async function (query) {
-  const CoinGeckoClient = new CoinGecko();
-  /* console.log(query.queryStringParameters.id) */
   const params = query.queryStringParameters
   const newStart = new Date(params.start).setUTCHours(0,0,0,0)
   const newEnd = new Date(params.end).setUTCHours(0,0,0,0)
@@ -21,7 +17,6 @@ const handler = async function (query) {
 
       const startTime = newStart/1000
       const endTime = (newEnd+48*60*60*1000)/1000
-      console.log(startTime,endTime)
       const client = CoinGeckoClient.coins.fetchMarketChartRange(params.id, {
         from: startTime,
         to: endTime,

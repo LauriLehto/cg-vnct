@@ -33,7 +33,14 @@ function CoinChart(props){
     let bearishData = {
       showInLegend: false,
       type:'line',
-      marker:{enabled:false},
+      marker:{
+        enabled:false,
+        states: {
+          hover: {
+            enabled:false
+          }
+        }
+      },
       lineWidth:3,
       color:'grey',
       data:[]
@@ -56,7 +63,17 @@ function CoinChart(props){
         showInLegend: true,
         name:'',
         type:'line',
-        marker:{enabled:false},
+        marker:{
+          enabled:false,
+          states: {
+            hover: {
+              enabled:false
+            }
+          }
+        },
+        tooltip: {
+          enabled: false
+        },
         lineWidth:2,
         color:'orange',
         data:[]
@@ -91,8 +108,6 @@ function CoinChart(props){
 
     if(Object.keys(data).length){
       const { topPrice, bottomPrice } = prices
-      const priceDiff = topPrice[1]-bottomPrice[1]
-      const tenth = priceDiff/15
 
       const priceData = {
         showInLegend: true,
@@ -103,12 +118,12 @@ function CoinChart(props){
       }
         
         const highestPrice = { marker:{enabled:true, symbol: 'triangle-down'}, color:'green', }
-      highestPrice.name = `Highest price was ${numberWithSpaces(topPrice[1])} € on ${getUTCTimeString(topPrice[0])}`
-      highestPrice.data = [[topPrice[0], topPrice[1]+tenth],[topPrice[0],topPrice[1]+tenth]]
+      highestPrice.name = `Highest price was on ${getUTCTimeString(topPrice[0])}`
+      highestPrice.data = [[topPrice[0], topPrice[1]],[topPrice[0],topPrice[1]]]
 
       const lowestPrice = { marker:{enabled:true, symbol: 'triangle'}, color:'red',  }
-      lowestPrice.name = `Lowest price was ${numberWithSpaces(bottomPrice[1])} € on ${getUTCTimeString(bottomPrice[0])}`
-      lowestPrice.data = [[bottomPrice[0], bottomPrice[1]-tenth],[bottomPrice[0],bottomPrice[1]-tenth]]
+      lowestPrice.name = `Lowest price was on ${getUTCTimeString(bottomPrice[0])}`
+      lowestPrice.data = [[bottomPrice[0], bottomPrice[1]],[bottomPrice[0],bottomPrice[1]]]
 
       return [{...priceData, ...lowestPrice}, {...priceData, ...highestPrice}]
 
@@ -142,7 +157,7 @@ function CoinChart(props){
 
       let titleText = ''
       if(chartStart === bearStart && chartEnd === bearEnd){
-        titleText = "You should DUCK and SCROOGE, date range is complete bearish! Do not buy or sell!"
+        titleText = "You should DUCK and SCROOGE, value drops for the entire time period! Do not buy or sell!"
       }
 
       return {
@@ -165,7 +180,7 @@ function CoinChart(props){
     let chartSeries = [
       {
         data: chartData,
-        name:`${currency.selected.name} value between ${getUTCTimeString(currency.startDate)} and ${getUTCTimeString(currency.endDate)}`,
+        name:`${currency.selected.name} value`,
         turboThreshold: 5000
       }
     ]
@@ -186,7 +201,7 @@ function CoinChart(props){
   if(chartData.length){
     chartOptions = {
       title: {
-        text: `${currency.selected.name} cryptocurrency value chart`
+        text: `${currency.selected.name} value graph between <br/>${getUTCTimeString(currency.startDate)} and ${getUTCTimeString(currency.endDate)}`
       },
       xAxis: getChartTitle(),
       series: getChartSeries()
@@ -204,7 +219,6 @@ function CoinChart(props){
         return data
       })
   
-      //console.log('daily data',newChartData)
       setChartData(newChartData)
   
       //produce bearish data
@@ -260,14 +274,12 @@ function CoinChart(props){
           .then(res => res.json())
           .then(json => {
             if(json.data){
-              console.log(json.data)
               createChartData(json.data)
               setData(json.data)
               setShowChart(true)
               props.setDataLoading(false)
             } else {
               setData([])
-              console.log(json)
             }
 
           })

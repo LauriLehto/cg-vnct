@@ -10,8 +10,6 @@ import TextField from '@mui/material/TextField';
 import DesktopDatePicker from '@mui/lab/DesktopDatePicker';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
-//import {writeJsonFile} from 'write-json-file';
-
 
 import CoinChart from './components/CoinChart'
 
@@ -52,7 +50,6 @@ function App() {
   };
 
   const handleList = (event, newValue) => {
-    console.log(newValue)
     setSelected(newValue)
     const newErrors = [...errors]
     newErrors.splice(newErrors.indexOf('noCoin'),1)
